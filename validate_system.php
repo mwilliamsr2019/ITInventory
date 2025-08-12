@@ -150,4 +150,6 @@ try {
     echo "Please ensure MariaDB/MySQL is running and create the database/user:\n";
     echo "CREATE DATABASE it_inventory;\n";
     echo "CREATE USER 'it_inventory_user'@'localhost' IDENTIFIED BY 'secure_password';\n";
-    echo "GRANT ALL PRIVILEGES ON it_inventory.* TO 'it_inventory
+    echo "GRANT ALL PRIVILEGES ON it_inventory.* TO 'it_inventory';\n";
+}
+
