@@ -452,3 +452,39 @@ function deleteUser(id) {
         });
     }
 }
+            alert(data.message);
+            loadUsers();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting user');
+        });
+    }
+}
+            alert(data.message);
+            loadUsers();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error deleting user");
+        });
+    }
+}
+            alert(data.message);
+            loadUsers();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting user');
+        });
+    }
+}
+            alert(data.message);
+            loadUsers();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error deleting user");
+        });
+    }
+}
