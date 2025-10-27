@@ -223,94 +223,40 @@
                                     <input type="text" class="form-control" id="propertyNumber" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="warrantyEndDate" class="form-label">Warranty End Date</label>
-                                    <input type="date" class="form-control" id="warrantyEndDate">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="excessDate" class="form-label">Excess Date</label>
-                                    <input type="date" class="form-control" id="excessDate">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="useCase" class="form-label">Use Case *</label>
-                                    <select class="form-select" id="useCase" required>
-                                        <option value="">Select Use Case</option>
-                                        <option value="Desktop">Desktop</option>
-                                        <option value="Laptop">Laptop</option>
-                                        <option value="Server">Server</option>
-                                        <option value="Network Equipment">Network Equipment</option>
-                                        <option value="Storage System">Storage System</option>
-                                        <option value="Development">Development</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="location" class="form-label">Location *</label>
-                                    <select class="form-select" id="location" required>
-                                        <option value="">Select Location</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="onSite" class="form-label">On Site/Remote *</label>
-                                    <select class="form-select" id="onSite" required>
-                                        <option value="On Site">On Site</option>
-                                        <option value="Remote">Remote</option>
-                                    </select>
-                                </div>
-                            </div>
+                    >
+                        <input type="hidden" id="userId">
+                        <div class="mb-3">
+                            <label for="userUsername" class="form-label">Username *</label>
+                            <input type="text" class="form-control" id="userUsername" required>
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" rows="3"></textarea>
+                            <label for="userEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="userEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userRole" class="form-label">Role *</label>
+                            <select class="form-select" id="userRole" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="userPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userActive" class="form-label">Status *</label>
+                            <select class="form-select" id="userActive" required>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveInventoryItem()">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Import Modal -->
-    <div class="modal fade" id="importModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Import CSV</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="importForm" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="csvFile" class="form-label">Select CSV File</label>
-                            <input type="file" class="form-control" id="csvFile" accept=".csv" required>
-                        </div>
-                        <div class="alert alert-info">
-                            <strong>Required columns:</strong> Make, Model, Serial Number, Property Number, Use Case, Location
-                            <br>
-                            <strong>Optional columns:</strong> Warranty End Date, Excess Date, On Site, Description
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="importCSV()">Import</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">Save User</button>
                 </div>
             </div>
         </div>
