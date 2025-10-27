@@ -135,7 +135,156 @@ function editItem(id) {
             document.getElementById('excessDate').value = item.excess_date || '';
             document.getElementById('useCase').value = item.use_case;
             document.getElementById('location').value = item.location_id;
-            document.getElementById('            headers: {
+            document.getElementById('onSite').value = item.on_site;
+            document.getElementById('description').value = item.description || '';
+            
+            document.querySelector('#addModal .modal-title').textContent = 'Edit Inventory Item';
+            const modal = new bootstrap.Modal(document.getElementById('addModal'));
+            modal.show();
+        });
+}
+
+function saveInventoryItem() {
+    const formData = {
+        make: document.getElementById('make').value,
+        model: document.getElementById('model').value,
+        serial_number: document.getElementById('serialNumber').value,
+        property_number: document.getElementById('propertyNumber').value,
+        warranty_end_date: document.getElementById('warrantyEndDate').value || null,
+        excess_date: document.getElementById('excessDate').value || null,
+        use_case: document.getElementById('useCase').value,
+        location_id: parseInt(document.getElementById('location').value),
+        on_site: document.getElementById('onSite').value,
+        description: document.getElementById('description').value,
+        created_by: currentUser.id
+    };
+    
+    if (editingId) {
+        formData.id = editingId;
+    }
+    
+    const method = editingId ? 'PUT' : 'POST';
+    const url = 'api/inventory.php';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (response.ok) {
+            alert(data.message);
+            loadInventory();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+            modal.hide();
+            resetForm();
+        } else {
+            alert(data.message || 'Error saving item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving inventory item');
+    });
+}
+
+function deleteItem(id) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        fetch('api/inventory.php', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            loadInventory();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting item');
+        });
+    }
+}
+
+function resetForm() {
+    editingId = null;
+    document.getElementById('inventoryForm').reset();
+    document.querySelector('#addModal .modal-title').textContent = 'Add Inventory Item';
+}
+
+function exportCSV() {
+    window.location.href = 'api/csv_handler.php';
+}
+
+function importCSV() {
+    const fileInput = document.getElementById('csvFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a CSV file');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('csv_file', file);
+    formData.append('user_id', currentUser.id);
+    
+    fetch('api/csv_handler.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`Import completed. ${data.imported} items imported.`);
+        if (data.errors.length > 0) {
+            alert('Errors:\n' + data.errors.join('\n'));
+        }
+        loadInventory();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+        modal.hide();
+        document.getElementById('importForm').reset();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error importing CSV');
+    });
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'index.php';
+}
+
+function updateProfile(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('profileEmail').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword && newPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    // Update profile logic would go here
+    alert('Profile updated successfully');
+}
+
+// Add new location from form
+function addNewLocation() {
+    const locationName = prompt('Enter new location name:');
+    if (locationName) {
+        fetch('api/locations.php', {
+            method: 'POST',
+                       headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ location_name: locationName, description: 'Added from dashboard' })
@@ -298,16 +447,8 @@ function deleteUser(id) {
             loadUsers();
         })
         .catch(error => {
-            console.error("Error:", error);
-            alert("Error deleting user");
+            console.error('Error:', error);
+            alert('Error deleting user');
         });
     }
-}
-		alert(data.message);
-		loadUsers();
-	})
-	.catch(error => {
-		console.error('Error:', error);
-		alert('Error deleting user');
-	});
 }
