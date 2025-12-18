@@ -183,9 +183,20 @@ function validateCSRFToken(string $token): bool {
 function redirect(string $url, int $status = 302, bool $exit = true): void {
     // Validate URL to prevent open redirect vulnerabilities
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
-        // Fallback to relative path validation
-        if (!preg_match('/^\/[a-zA-Z0-9\-._~:\/?#\[\]@!$&\'()*+,;=%]*$/', $url)) {
-            throw new InvalidArgumentException("Invalid redirect URL");
+        // Allow relative URLs (files like dashboard.php, admin/users.php, etc.)
+        if (!preg_match('/^[a-zA-Z0-9\-._~:\/?#\[\]@!$&\'()*+,;=%]+$/', $url)) {
+            throw new InvalidArgumentException("Invalid redirect URL: $url");
+        }
+        
+        // Additional security check - prevent directory traversal and absolute paths
+        if (strpos($url, '..') !== false || strpos($url, '//') !== false) {
+            throw new InvalidArgumentException("Invalid redirect URL - potential security issue: $url");
+        }
+    } else {
+        // For absolute URLs, ensure they're safe (same origin or trusted)
+        $parsedUrl = parse_url($url);
+        if (isset($parsedUrl['host']) && !in_array($parsedUrl['host'], ['localhost', $_SERVER['HTTP_HOST'] ?? ''])) {
+            throw new InvalidArgumentException("Invalid redirect URL - external domains not allowed: $url");
         }
     }
     
