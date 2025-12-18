@@ -82,9 +82,9 @@ class Database {
             PDO::ATTR_STRINGIFY_FETCHES => false,
             PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET . " COLLATE utf8mb4_unicode_ci",
-            PDO::ATTR_PERSISTENT => $this->shouldUsePersistentConnections(),
-            PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-            PDO::MYSQL_ATTR_SSL_CA => null,
+            PDO::ATTR_PERSISTENT => false, // Disable persistent connections for now
+            PDO::ATTR_TIMEOUT => 30, // Connection timeout in seconds
+            // Remove problematic SSL settings for local connections
         ];
     }
     
@@ -105,27 +105,45 @@ class Database {
      * @throws RuntimeException If connection fails
      */
     private function initializeConnection(): void {
-        try {
-            $dsn = sprintf(
-                "mysql:host=%s;dbname=%s;charset=%s",
-                $this->config['host'],
-                $this->config['dbname'],
-                $this->config['charset']
-            );
-            
-            $this->connection = new PDO(
-                $dsn,
-                $this->config['user'],
-                $this->config['password'],
-                $this->config['options']
-            );
-            
-            // Set additional MySQL session variables for better performance
-            $this->connection->exec("SET time_zone = '+00:00'");
-            $this->connection->exec("SET sql_mode = 'STRICT_ALL_TABLES'");
-            
-        } catch (PDOException $e) {
-            $this->handleConnectionError($e);
+        $maxRetries = 3;
+        $retryDelay = 1; // seconds
+        
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $dsn = sprintf(
+                    "mysql:host=%s;dbname=%s;charset=%s",
+                    $this->config['host'],
+                    $this->config['dbname'],
+                    $this->config['charset']
+                );
+                
+                $this->connection = new PDO(
+                    $dsn,
+                    $this->config['user'],
+                    $this->config['password'],
+                    $this->config['options']
+                );
+                
+                // Set additional MySQL session variables for better performance
+                $this->connection->exec("SET time_zone = '+00:00'");
+                $this->connection->exec("SET sql_mode = 'STRICT_ALL_TABLES'");
+                
+                // Connection successful, break out of retry loop
+                return;
+                
+            } catch (PDOException $e) {
+                error_log("Database connection attempt $attempt failed: " . $e->getMessage());
+                
+                // If this is the last attempt, handle the error
+                if ($attempt === $maxRetries) {
+                    $this->handleConnectionError($e);
+                }
+                
+                // Wait before retrying (except on last attempt)
+                if ($attempt < $maxRetries) {
+                    sleep($retryDelay);
+                }
+            }
         }
     }
     
@@ -186,9 +204,22 @@ class Database {
      * @return bool
      */
     private function isConnectionActive(): bool {
+        if ($this->connection === null) {
+            return false;
+        }
+        
         try {
-            return $this->connection !== null && $this->connection->query('SELECT 1');
+            // Use a simple query to test connection
+            $result = $this->connection->query('SELECT 1');
+            return $result !== false;
         } catch (PDOException $e) {
+            // Check if it's a "server has gone away" error
+            $errorMessage = $e->getMessage();
+            if (strpos($errorMessage, 'server has gone away') !== false ||
+                strpos($errorMessage, 'MySQL server has gone away') !== false ||
+                $e->getCode() == 2006) {
+                error_log("MySQL server has gone away detected, will attempt reconnection");
+            }
             return false;
         }
     }
@@ -199,8 +230,16 @@ class Database {
      * @throws RuntimeException If reconnection fails
      */
     private function reconnect(): void {
+        error_log("Attempting database reconnection...");
         $this->connection = null;
-        $this->initializeConnection();
+        
+        try {
+            $this->initializeConnection();
+            error_log("Database reconnection successful");
+        } catch (RuntimeException $e) {
+            error_log("Database reconnection failed: " . $e->getMessage());
+            throw new RuntimeException("Failed to reconnect to database: " . $e->getMessage());
+        }
     }
     
     /**
