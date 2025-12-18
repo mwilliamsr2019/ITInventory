@@ -85,7 +85,7 @@ setNoCacheHeaders();
                         
                         <div class="mt-3 text-center">
                             <small class="text-muted">
-                                Default login: admin / admin123
+                                Default login: admin / password
                             </small>
                         </div>
                     </div>
