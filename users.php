@@ -503,9 +503,11 @@ function resetUserPassword($data) {
                                     <label for="auth_type" class="form-label">Authentication Type</label>
                                     <select class="form-select" name="auth_type">
                                         <option value="local">Local</option>
-                                        <?php if (LDAP_ENABLED): ?>
-                                            <option value="ldap">LDAP</option>
-                                        <?php endif; ?>
+                                        <?php
+                                        if (defined('LDAP_ENABLED') && LDAP_ENABLED === true) {
+                                            echo '<option value="ldap">LDAP</option>';
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                             </div>

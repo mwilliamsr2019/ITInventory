@@ -23,16 +23,32 @@ class User {
             return ['success' => false, 'message' => 'Account temporarily locked due to failed login attempts'];
         }
         
+        $authenticated = false;
+        $authMethod = '';
+        
         // Try local authentication first
         if ($this->authenticateLocal($username, $password)) {
-            $this->resetFailedAttempts($username);
-            return ['success' => true, 'message' => 'Login successful'];
+            $authenticated = true;
+            $authMethod = 'local';
+        }
+        // Try LDAP/SSSD authentication if enabled and local auth failed
+        else {
+            // Check if LDAP is enabled before attempting LDAP authentication
+            if (defined('LDAP_ENABLED') && LDAP_ENABLED) {
+                if ($this->authenticateLDAP($username, $password)) {
+                    $authenticated = true;
+                    $authMethod = 'ldap';
+                }
+            }
         }
         
-        // Try LDAP/SSSD authentication if enabled
-        if (LDAP_ENABLED && $this->authenticateLDAP($username, $password)) {
+        if ($authenticated) {
             $this->resetFailedAttempts($username);
-            return ['success' => true, 'message' => 'LDAP login successful'];
+            if ($authMethod === 'local') {
+                return ['success' => true, 'message' => 'Login successful'];
+            } else {
+                return ['success' => true, 'message' => 'LDAP login successful'];
+            }
         }
         
         // Increment failed attempts
@@ -64,17 +80,17 @@ class User {
         ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
         
-        $bind = @ldap_bind($ldap, LDAP_BIND_DN, LDAP_BIND_PASS);
+        $bind = ldap_bind($ldap, LDAP_BIND_DN, LDAP_BIND_PASS);
         if (!$bind) {
             return false;
         }
         
-        $search = ldap_search($ldap, LDAP_BASE_DN, "(uid=$username)");
+        $search = ldap_search($ldap, LDAP_BASE_DN, "(uid=" . ldap_escape($username, "", LDAP_ESCAPE_FILTER) . ")");
         $entries = ldap_get_entries($ldap, $search);
         
         if ($entries['count'] == 1) {
             $user_dn = $entries[0]['dn'];
-            $bind = @ldap_bind($ldap, $user_dn, $password);
+            $bind = ldap_bind($ldap, $user_dn, $password);
             
             if ($bind) {
                 // Check if user exists in local database
@@ -85,8 +101,17 @@ class User {
                 if (!$user) {
                     // Create user from LDAP
                     $this->createUserFromLDAP($entries[0], $username);
+                    
+                    // Re-prepare and execute the query to fetch the newly created user
+                    $stmt = $this->db->prepare("SELECT * FROM users WHERE username = ? AND auth_type IN ('ldap', 'sssd')");
                     $stmt->execute([$username]);
                     $user = $stmt->fetch();
+                    
+                    // If user still doesn't exist, something went wrong with user creation
+                    if (!$user) {
+                        ldap_close($ldap);
+                        return false;
+                    }
                 }
                 
                 if ($user && $user['is_active']) {
@@ -356,4 +381,3 @@ class User {
     public function getAuthType() { return $this->authType; }
     public function isActive() { return $this->isActive; }
 }
-?>

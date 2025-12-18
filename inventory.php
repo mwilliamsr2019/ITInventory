@@ -102,23 +102,23 @@ $statuses = $inventory->getStatuses();
                             <div class="row">
                                 <div class="col-md-3">
                                     <label for="make" class="form-label">Make</label>
-                                    <input type="text" class="form-control" id="make" name="make" 
-                                           value="<?php echo $filters['make']; ?>">
+                                    <input type="text" class="form-control" id="make" name="make"
+                                           value="<?php echo is_array($filters['make']) ? '' : sanitizeInput($filters['make']); ?>">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="model" class="form-label">Model</label>
-                                    <input type="text" class="form-control" id="model" name="model" 
-                                           value="<?php echo $filters['model']; ?>">
+                                    <input type="text" class="form-control" id="model" name="model"
+                                           value="<?php echo is_array($filters['model']) ? '' : sanitizeInput($filters['model']); ?>">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="serial_number" class="form-label">Serial Number</label>
-                                    <input type="text" class="form-control" id="serial_number" name="serial_number" 
-                                           value="<?php echo $filters['serial_number']; ?>">
+                                    <input type="text" class="form-control" id="serial_number" name="serial_number"
+                                           value="<?php echo is_array($filters['serial_number']) ? '' : sanitizeInput($filters['serial_number']); ?>">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="property_number" class="form-label">Property Number</label>
-                                    <input type="text" class="form-control" id="property_number" name="property_number" 
-                                           value="<?php echo $filters['property_number']; ?>">
+                                    <input type="text" class="form-control" id="property_number" name="property_number"
+                                           value="<?php echo is_array($filters['property_number']) ? '' : sanitizeInput($filters['property_number']); ?>">
                                 </div>
                             </div>
                             <div class="row mt-3">
@@ -160,8 +160,8 @@ $statuses = $inventory->getStatuses();
                                 </div>
                                 <div class="col-md-3">
                                     <label for="assigned_to" class="form-label">Assigned To</label>
-                                    <input type="text" class="form-control" id="assigned_to" name="assigned_to" 
-                                           value="<?php echo $filters['assigned_to']; ?>">
+                                    <input type="text" class="form-control" id="assigned_to" name="assigned_to"
+                                           value="<?php echo is_array($filters['assigned_to']) ? '' : sanitizeInput($filters['assigned_to']); ?>">
                                 </div>
                             </div>
                             <div class="row mt-3">
