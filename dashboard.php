@@ -7,6 +7,7 @@ require_once 'classes/Inventory.php';
 // Check if user is logged in
 User::requireLogin();
 
+// Set headers before any output
 setSecurityHeaders();
 setNoCacheHeaders();
 

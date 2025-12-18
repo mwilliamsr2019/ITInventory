@@ -22,8 +22,18 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     
     // Redirect to login with return URL
     $currentUrl = urlencode($_SERVER['REQUEST_URI'] ?? '');
-    header("Location: login.php?redirect=$currentUrl");
-    exit();
+    
+    // Check if headers have already been sent
+    if (!headers_sent()) {
+        header("Location: login.php?redirect=$currentUrl");
+        exit();
+    } else {
+        // If headers already sent, show a message instead of redirecting
+        echo '<div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border: 1px solid #f5c6cb; border-radius: 4px;">';
+        echo 'Please <a href="login.php?redirect=' . htmlspecialchars($currentUrl) . '">login</a> to continue.';
+        echo '</div>';
+        exit();
+    }
 }
 
 // Define navigation configuration for better maintainability
@@ -73,10 +83,6 @@ $role = sanitizeInput($_SESSION['role'] ?? 'user');
 
 // Generate CSRF token for logout link
 $logoutToken = generateCSRFToken();
-
-// Set security headers for this component
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" role="navigation" aria-label="Main navigation">
     <div class="container-fluid">

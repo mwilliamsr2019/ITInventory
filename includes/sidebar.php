@@ -12,7 +12,6 @@ _POST["name"]<?php
 
 // Security check: Ensure this file is included by another PHP file
 if (!defined('INCLUDED_FROM_LAYOUT')) {
-    http_response_code(403);
     exit('Direct access not permitted');
 }
 

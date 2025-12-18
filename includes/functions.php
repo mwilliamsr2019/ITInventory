@@ -569,7 +569,7 @@ function arrayToCsv(array $data, string $delimiter = ',', string $enclosure = '"
     
     try {
         // Set locale for proper CSV formatting
-        $originalLocale = setlocale(LC_ALL, 0);
+        $originalLocale = setlocale(LC_ALL, locale_array: 0);
         setlocale(LC_ALL, 'en_US.UTF-8');
         
         // Write headers
@@ -581,7 +581,16 @@ function arrayToCsv(array $data, string $delimiter = ',', string $enclosure = '"
             // Ensure all values are properly encoded
             $encodedRow = array_map(function($value) use ($encoding) {
                 if (is_string($value)) {
-                    return mb_convert_encoding($value, $encoding, 'UTF-8');
+                    // Use mb_convert_encoding if available, otherwise use iconv or fallback
+                    if (function_exists('mb_convert_encoding')) {
+                        return mb_convert_encoding($value, $encoding, 'UTF-8');
+                    } elseif (function_exists('iconv')) {
+                        $converted = @iconv('UTF-8', $encoding . '//IGNORE', $value);
+                        return $converted !== false ? $converted : $value;
+                    } else {
+                        // Fallback: ensure basic UTF-8 compatibility
+                        return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    }
                 }
                 return $value;
             }, $row);
@@ -817,7 +826,6 @@ function setSecurityHeaders(array $options = []): void {
         'content_security_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; font-src 'self' cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self';",
         'referrer_policy' => 'strict-origin-when-cross-origin',
         'permissions_policy' => 'geolocation=(), microphone=(), camera=()',
-        'x_content_type_options' => 'nosniff',
         'x_download_options' => 'noopen',
         'x_permitted_cross_domain_policies' => 'none'
     ];
