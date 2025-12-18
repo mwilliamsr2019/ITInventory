@@ -569,7 +569,7 @@ function arrayToCsv(array $data, string $delimiter = ',', string $enclosure = '"
     
     try {
         // Set locale for proper CSV formatting
-        $originalLocale = setlocale(LC_ALL, 0);
+        $originalLocale = setlocale(LC_ALL, 'en_US.UTF-8');
         setlocale(LC_ALL, 'en_US.UTF-8');
         
         // Write headers
