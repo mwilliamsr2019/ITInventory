@@ -330,13 +330,11 @@ class User {
     
     public function getUserById($userId) {
         $stmt = $this->db->prepare("
-            SELECT u.*, 
-                   GROUP_CONCAT(g.name SEPARATOR ', ') as groups,
-                   l.name as location_name
+            SELECT u.*,
+                   GROUP_CONCAT(g.name SEPARATOR ', ') as groups
             FROM users u
             LEFT JOIN user_groups ug ON u.id = ug.user_id
             LEFT JOIN groups g ON ug.group_id = g.id
-            LEFT JOIN locations l ON u.location_id = l.id
             WHERE u.id = ?
             GROUP BY u.id
         ");
