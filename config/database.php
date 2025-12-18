@@ -3,7 +3,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'it_inventory');
 define('DB_USER', 'inventory_user');
-define('DB_PASS', 'inventory_pass');
+define('DB_PASS', '@20mimiX20@');
 define('DB_CHARSET', 'utf8mb4');
 
 // SSSD/LDAP configuration (optional)
